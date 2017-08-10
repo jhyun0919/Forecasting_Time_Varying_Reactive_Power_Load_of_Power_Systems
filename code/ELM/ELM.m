@@ -15,12 +15,12 @@ function [TrainingTime, TestingTime, TrainingAccuracy, TestingAccuracy] = elm(Tr
 %                           'tribas' for Triangular basis function
 %                           'radbas' for Radial basis function (for additive type of SLFNs instead of RBF type of SLFNs)
 %
-% Output: 
+% Output:
 % TrainingTime          - Time (seconds) spent on training ELM
 % TestingTime           - Time (seconds) spent on predicting ALL testing data
-% TrainingAccuracy      - Training accuracy: 
+% TrainingAccuracy      - Training accuracy:
 %                           RMSE for regression or correct classification rate for classification
-% TestingAccuracy       - Testing accuracy: 
+% TestingAccuracy       - Testing accuracy:
 %                           RMSE for regression or correct classification rate for classification
 %
 % MULTI-CLASSE CLASSIFICATION: NUMBER OF OUTPUT NEURONS WILL BE AUTOMATICALLY SET EQUAL TO NUMBER OF CLASSES
@@ -70,13 +70,13 @@ if Elm_Type~=REGRESSION
     end
     number_class=j;
     NumberofOutputNeurons=number_class;
-       
+
     %%%%%%%%%% Processing the targets of training
     temp_T=zeros(NumberofOutputNeurons, NumberofTrainingData);
     for i = 1:NumberofTrainingData
         for j = 1:number_class
             if label(1,j) == T(1,i)
-                break; 
+                break;
             end
         end
         temp_T(j,i)=1;
@@ -88,7 +88,7 @@ if Elm_Type~=REGRESSION
     for i = 1:NumberofTestingData
         for j = 1:number_class
             if label(1,j) == TV.T(1,i)
-                break; 
+                break;
             end
         end
         temp_TV_T(j,i)=1;
@@ -104,7 +104,7 @@ start_time_train=cputime;
 InputWeight=rand(NumberofHiddenNeurons,NumberofInputNeurons)*2-1;
 BiasofHiddenNeurons=rand(NumberofHiddenNeurons,1);
 tempH=InputWeight*P;
-clear P;                                            %   Release input of training data 
+clear P;                                            %   Release input of training data
 ind=ones(1,NumberofTrainingData);
 BiasMatrix=BiasofHiddenNeurons(:,ind);              %   Extend the bias matrix BiasofHiddenNeurons to match the demention of H
 tempH=tempH+BiasMatrix;
@@ -112,11 +112,11 @@ tempH=tempH+BiasMatrix;
 %%%%%%%%%%% Calculate hidden neuron output matrix H
 switch lower(ActivationFunction)
     case {'sig','sigmoid'}
-        %%%%%%%% Sigmoid 
+        %%%%%%%% Sigmoid
         H = 1 ./ (1 + exp(-tempH));
     case {'sin','sine'}
         %%%%%%%% Sine
-        H = sin(tempH);    
+        H = sin(tempH);
     case {'hardlim'}
         %%%%%%%% Hard Limit
         H = double(hardlim(tempH));
@@ -126,20 +126,20 @@ switch lower(ActivationFunction)
     case {'radbas'}
         %%%%%%%% Radial basis function
         H = radbas(tempH);
-        %%%%%%%% More activation functions can be added here                
+        %%%%%%%% More activation functions can be added here
 end
 clear tempH;                                        %   Release the temparary array for calculation of hidden neuron output matrix H
 
 %%%%%%%%%%% Calculate output weights OutputWeight (beta_i)
 OutputWeight=pinv(H') * T';                        % implementation without regularization factor //refer to 2006 Neurocomputing paper
 %OutputWeight=inv(eye(size(H,1))/C+H * H') * H * T';   % faster method 1 //refer to 2012 IEEE TSMC-B paper
-%implementation; one can set regularizaiton factor C properly in classification applications 
+%implementation; one can set regularizaiton factor C properly in classification applications
 %OutputWeight=(eye(size(H,1))/C+H * H') \ H * T';      % faster method 2 //refer to 2012 IEEE TSMC-B paper
 %implementation; one can set regularizaiton factor C properly in classification applications
 
-%If you use faster methods or kernel method, PLEASE CITE in your paper properly: 
+%If you use faster methods or kernel method, PLEASE CITE in your paper properly:
 
-%Guang-Bin Huang, Hongming Zhou, Xiaojian Ding, and Rui Zhang, "Extreme Learning Machine for Regression and Multi-Class Classification," submitted to IEEE Transactions on Pattern Analysis and Machine Intelligence, October 2010. 
+%Guang-Bin Huang, Hongming Zhou, Xiaojian Ding, and Rui Zhang, "Extreme Learning Machine for Regression and Multi-Class Classification," submitted to IEEE Transactions on Pattern Analysis and Machine Intelligence, October 2010.
 
 end_time_train=cputime;
 TrainingTime=end_time_train-start_time_train        %   Calculate CPU time (seconds) spent for training ELM
@@ -154,27 +154,27 @@ clear H;
 %%%%%%%%%%% Calculate the output of testing input
 start_time_test=cputime;
 tempH_test=InputWeight*TV.P;
-clear TV.P;             %   Release input of testing data             
+clear TV.P;             %   Release input of testing data
 ind=ones(1,NumberofTestingData);
 BiasMatrix=BiasofHiddenNeurons(:,ind);              %   Extend the bias matrix BiasofHiddenNeurons to match the demention of H
 tempH_test=tempH_test + BiasMatrix;
 switch lower(ActivationFunction)
     case {'sig','sigmoid'}
-        %%%%%%%% Sigmoid 
+        %%%%%%%% Sigmoid
         H_test = 1 ./ (1 + exp(-tempH_test));
     case {'sin','sine'}
         %%%%%%%% Sine
-        H_test = sin(tempH_test);        
+        H_test = sin(tempH_test);
     case {'hardlim'}
         %%%%%%%% Hard Limit
-        H_test = hardlim(tempH_test);        
+        H_test = hardlim(tempH_test);
     case {'tribas'}
         %%%%%%%% Triangular basis function
-        H_test = tribas(tempH_test);        
+        H_test = tribas(tempH_test);
     case {'radbas'}
         %%%%%%%% Radial basis function
-        H_test = radbas(tempH_test);        
-        %%%%%%%% More activation functions can be added here        
+        H_test = radbas(tempH_test);
+        %%%%%%%% More activation functions can be added here
 end
 TY=(H_test' * OutputWeight)';                       %   TY: the actual output of the testing data
 end_time_test=cputime;
@@ -204,5 +204,5 @@ if Elm_Type == CLASSIFIER
             MissClassificationRate_Testing=MissClassificationRate_Testing+1;
         end
     end
-    TestingAccuracy=1-MissClassificationRate_Testing/size(TV.T,2)  
+    TestingAccuracy=1-MissClassificationRate_Testing/size(TV.T,2)
 end
