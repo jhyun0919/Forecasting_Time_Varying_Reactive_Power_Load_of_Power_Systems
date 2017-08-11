@@ -1,14 +1,31 @@
 import scipy.io as sio
-import numpy as np
 
-file_directory ='/Users/JH/Documents/GitHub/Forecasting_Time_Varying_Reactive_Power_Load_of_Power_Systems/data/data_read.mat'
-mat_contents = sio.loadmat(file_directory)
 
-selectData = {}
+def read_raw_data(file_dir):
+    """
+    read mat format data and return as a dictionary dtype data
+    :return: dictionary data
+    """
 
-selectData['data_p'] = mat_contents['data_p']
-selectData['data_q'] = mat_contents['data_q']
-selectData['data_w'] = mat_contents['data_w']
-selectData['date_idx'] = mat_contents['week']
+    mat_contents = sio.loadmat(file_name=file_dir)
 
-print selectData
+    select_data = dict()
+
+    select_data['data_p'] = mat_contents['data_p']
+    select_data['data_q'] = mat_contents['data_q']
+    select_data['data_w'] = mat_contents['data_w']
+    select_data['date_idx'] = mat_contents['week']
+
+    return select_data
+
+
+def read_preprocess_data(file_dir):
+    return sio.loadmat(file_name=file_dir)
+
+
+def read_predict_p_data(file_dir):
+    return sio.loadmat(file_name=file_dir)
+
+
+if __name__ == "__main__":
+    pass
