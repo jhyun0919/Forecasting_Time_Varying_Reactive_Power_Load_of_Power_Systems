@@ -19,7 +19,7 @@ CONST_val_ratio = 0.1
 CONST_test_ratio = 0.2
 
 
-def select_data(dict_data):
+def sum_select_data(dict_data):
     new_dict = dict()
 
     # power data
@@ -73,7 +73,7 @@ def train_val_test_divide(array_data):
     return array_data[0:train_len, :], array_data[train_len:train_len+val_len, :], array_data[train_len+val_len:, :]
 
 
-def build_predict_p_data(dict_data, day_distance):
+def build_predict_p_data(dict_data4label, dict_data4feature, day_distance):
     label = []
     feature = []
 
@@ -81,11 +81,11 @@ def build_predict_p_data(dict_data, day_distance):
         temp_label = []
         temp_feature = []
 
-        temp_label.append(dict_data[CONST_p][row + day_distance].tolist())
-        temp_feature.append(dict_data[CONST_p][row].tolist() +
-                            dict_data[CONST_t][row].tolist() +
-                            dict_data[CONST_t][row + day_distance].tolist() +
-                            [dict_data[CONST_idx][row + day_distance][0]])
+        temp_label.append(dict_data4label[CONST_p][row + day_distance].tolist())
+        temp_feature.append(dict_data4feature[CONST_p][row].tolist() +
+                            dict_data4feature[CONST_t][row].tolist() +
+                            dict_data4feature[CONST_t][row + day_distance].tolist() +
+                            [dict_data4feature[CONST_idx][row + day_distance][0]])
 
         label.append(temp_label)
         feature.append(temp_feature)
@@ -99,7 +99,7 @@ def build_predict_p_data(dict_data, day_distance):
     return {'train_p': train_data}, {'val_p': val_data}, {'test_p': test_data}
 
 
-def build_predict_q_data(dict_data, predict_p, day_distance):
+def build_predict_q_data(dict_data4label, dict_data4feature, predict_p, day_distance):
     label = []
     feature = []
 
@@ -107,13 +107,13 @@ def build_predict_q_data(dict_data, predict_p, day_distance):
         temp_label = []
         temp_feature = []
 
-        temp_label.append(dict_data[CONST_q][row + day_distance].tolist())
+        temp_label.append(dict_data4label[CONST_q][row + day_distance].tolist())
         temp_feature.append(predict_p[row + day_distance].tolist() +
-                            dict_data[CONST_p][row].tolist() +
-                            dict_data[CONST_q][row].tolist() +
-                            dict_data[CONST_t][row].tolist() +
-                            dict_data[CONST_t][row + day_distance].tolist() +
-                            [dict_data[CONST_idx][row + day_distance][0]])
+                            dict_data4feature[CONST_p][row].tolist() +
+                            dict_data4feature[CONST_q][row].tolist() +
+                            dict_data4feature[CONST_t][row].tolist() +
+                            dict_data4feature[CONST_t][row + day_distance].tolist() +
+                            [dict_data4feature[CONST_idx][row + day_distance][0]])
 
         label.append(temp_label)
         feature.append(temp_feature)
