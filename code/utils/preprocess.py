@@ -1,5 +1,4 @@
 import numpy as np
-from sklearn import preprocessing
 
 CONST_p = 'data_p'
 CONST_q = 'data_q'
@@ -15,19 +14,26 @@ CONST_w2 = 'data_w2'
 CONST_row = 1048
 CONST_col = 24
 
-CONST_train_ratio = 0.8
+CONST_train_ratio = 0.7
+CONST_val_ratio = 0.1
+CONST_test_ratio = 0.2
 
 
-def sum_utility(dict_data):
+def select_data(dict_data):
     new_dict = dict()
 
+    # power data
     new_dict[CONST_p] = np.sum(dict_data[CONST_p], axis=1)
     new_dict[CONST_q] = np.sum(dict_data[CONST_q], axis=1)
+
+    # weather data
     new_dict[CONST_t] = dict_data[CONST_w][:, 0]
     # new_dict[CONST_ws] = dict_data[CONST_w][:, 1]
     # new_dict[CONST_h] = dict_data[CONST_w][:, 2]
     # new_dict[CONST_w1] = dict_data[CONST_w][:, 3]
     # new_dict[CONST_w2] = dict_data[CONST_w][:, 4]
+
+    # day-type index data
     new_dict[CONST_idx] = dict_data[CONST_idx]
 
     return new_dict
@@ -35,28 +41,37 @@ def sum_utility(dict_data):
 
 def reshape(dict_data):
     keyList = dict_data.keys()
-    print keyList
-
     for key in range(len(keyList)):
         dict_data[keyList[key]] = np.reshape(dict_data[keyList[key]], [CONST_row, CONST_col])
     return dict_data
 
 
 def scale(dict_data):
-    min_max_scaler = preprocessing.MinMaxScaler()
-
+    """
+    normalize the input attributes into the range [-1, 1]
+    :param dict_data: dataset in dictionary dtype
+    :return: normalized dataset in dictionary dtype
+    """
     keyList = dict_data.keys()
     for key in range(len(keyList)):
         if keyList[key] != CONST_idx:
             for row_idx in range(CONST_row):
-                dict_data[keyList[key]][row_idx] = min_max_scaler.fit_transform(dict_data[keyList[key]][row_idx])
+                max_value = np.amax(dict_data[keyList[key]][row_idx])
+                min_value = np.amin(dict_data[keyList[key]][row_idx])
+                for col_idx in range(len(dict_data[keyList[key]][row_idx])):
+                    numerator = dict_data[keyList[key]][row_idx][col_idx] - min_value
+                    denominator = max_value - min_value
+                    dict_data[keyList[key]][row_idx][col_idx] = 2*(numerator/denominator) - 1
     return dict_data
 
-def train_test_divide(array_data):
+
+def train_val_test_divide(array_data):
     data_len = len(array_data)
     train_len = int(data_len * CONST_train_ratio)
+    val_len = int(data_len * CONST_val_ratio)
 
-    return array_data[0:train_len, :], array_data[train_len:, :]
+    return array_data[0:train_len, :], array_data[train_len:train_len+val_len, :], array_data[train_len+val_len:, :]
+
 
 def build_predict_p_data(dict_data, day_distance):
     label = []
@@ -70,18 +85,18 @@ def build_predict_p_data(dict_data, day_distance):
         temp_feature.append(dict_data[CONST_p][row].tolist() +
                             dict_data[CONST_t][row].tolist() +
                             dict_data[CONST_t][row + day_distance].tolist() +
-                            dict_data[CONST_idx][row + day_distance].tolist())
+                            [dict_data[CONST_idx][row + day_distance][0]])
 
         label.append(temp_label)
         feature.append(temp_feature)
 
     label = np.reshape(np.array(label), [CONST_row - day_distance, CONST_col * 1])
-    feature = np.reshape(np.array(feature), [CONST_row - day_distance, CONST_col * 4])
+    feature = np.reshape(np.array(feature), [CONST_row - day_distance, CONST_col * 3 + 1])
 
     input_data = np.hstack((label, feature))
-    train_data, test_data = train_test_divide(input_data)
+    train_data, val_data, test_data = train_val_test_divide(input_data)
 
-    return {'train_p': train_data}, {'test_p': test_data}
+    return {'train_p': train_data}, {'val_p': val_data}, {'test_p': test_data}
 
 
 def build_predict_q_data(dict_data, predict_p, day_distance):
@@ -98,18 +113,18 @@ def build_predict_q_data(dict_data, predict_p, day_distance):
                             dict_data[CONST_q][row].tolist() +
                             dict_data[CONST_t][row].tolist() +
                             dict_data[CONST_t][row + day_distance].tolist() +
-                            dict_data[CONST_idx][row + day_distance].tolist())
+                            [dict_data[CONST_idx][row + day_distance][0]])
 
         label.append(temp_label)
         feature.append(temp_feature)
 
     label = np.reshape(np.array(label), [CONST_row - day_distance, CONST_col * 1])
-    feature = np.reshape(np.array(feature), [CONST_row - day_distance, CONST_col * 4])
+    feature = np.reshape(np.array(feature), [CONST_row - day_distance, CONST_col * 5 + 1])
 
     input_data = np.hstack((label, feature))
-    train_data, test_data = train_test_divide(input_data)
+    train_data, val_data, test_data = train_val_test_divide(input_data)
 
-    return {'train_p': train_data}, {'test_p': test_data}
+    return {'train_q': train_data}, {'val_q': val_data}, {'test_q': test_data}
 
 
 if __name__ == "__main__":
