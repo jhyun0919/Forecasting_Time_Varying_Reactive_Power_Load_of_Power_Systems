@@ -1,17 +1,13 @@
-function [TrainingTime, TestingTime, TrainingAccuracy_RMSE, TestingAccuracy_RMSE, TrainingAccuracy_MAPE, TestingAccuracy_MAPE, TrainingAccuracy_MAE, TestingAccuracy_MAE] = elm_MultiOutputRegression(TrainingData, TestingData, No_of_Output, NumberofHiddenNeurons, ActivationFunction)
+function [TrainingTime, TestingTime, TrainingAccuracy_RMSE, TestingAccuracy_RMSE, TrainingAccuracy_MAPE, TestingAccuracy_MAPE, TrainingAccuracy_MAE, TestingAccuracy_MAE, TY] = ELM_MultiOutputRegression(TrainingData, TestingData, No_of_Output, NumberofHiddenNeurons, ActivationFunction)
 
 %
 % Reference : http://www.ntu.edu.sg/eee/icis/cv/egbhuang.htm
 %
-    %%%%    Authors:    Park Jee Hyun
-    %%%%    SUNGKYUNKWAN UNIVERSITY, KOREA [UNDERGRADUATE STUDENT]
-    %%%%    NANYANG TECHNOLOGICAL UNIVERSITY, SINGAPORE [EXCHANGE STUDENT]
-    %%%%    EMAIL:      jhyun19@gmail.com
-    %%%%    WEBSITE:    https://jhyun0919.github.io
-    %%%%    DATE:       AUG 2017
+
 
 
 disp(['Number of HiddenNeurons = ', num2str(NumberofHiddenNeurons)]);
+disp(['Number of Outputs = ', num2str(No_of_Output)]);
 
 %%%%%%%%%%% Load training dataset
 T=TrainingData(:,1:No_of_Output)';                 %   training label data
@@ -72,8 +68,8 @@ TrainingTime=end_time_train-start_time_train;        %   Calculate CPU time (sec
 %%%%%%%%%%% Calculate the training accuracy
 Y=(H' * OutputWeight)';                             %   Y: the actual output of the training data
 
-TrainingAccuracy_RMSE=sqrt(mse(T - Y));              %   Calculate training accuracy (RMSE) for regression case
-[TrainingAccuracy_MAPE, TrainingAccuracy_MAE] = mape_mae(T, Y);
+[TrainingAccuracy_RMSE, TrainingAccuracy_MAPE, TrainingAccuracy_MAE] = accuracy(T, Y);  %   Calculate training accuracy (RMSE, MAPE) for regression case
+
 clear H;
 
 disp(['    Training Time = ', num2str(TrainingTime), ' seconds' ]);
@@ -84,8 +80,6 @@ disp(['    Training Accuracy MAE= ', num2str(TrainingAccuracy_MAE)]);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                                  TESTING                                     %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 
 %%%%%%%%%%% Calculate the output of testing input
 start_time_test=cputime;
@@ -109,8 +103,8 @@ end
 TY=(H_test' * OutputWeight)';                         %   TY: the actual output of the testing data
 end_time_test=cputime;
 TestingTime=end_time_test-start_time_test;            %   Calculate CPU time (seconds) spent by ELM predicting the whole testing data
-TestingAccuracy_RMSE=sqrt(mse(TV.T - TY));            %   Calculate testing accuracy (RMSE) for regression case
-[TestingAccuracy_MAPE, TestingAccuracy_MAE] = mape_mae(TV.T, TY);
+[TestingAccuracy_RMSE, TestingAccuracy_MAPE, TestingAccuracy_MAE] = accuracy(TV.T, TY);   %   Calculate testing accuracy (RMSE, MAPE) for regression case
+
 
 clear TV.T;
 

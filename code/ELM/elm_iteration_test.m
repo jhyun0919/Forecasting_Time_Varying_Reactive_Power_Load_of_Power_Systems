@@ -3,7 +3,7 @@ load '/Users/JH/Documents/GitHub/Forecasting_Time_Varying_Reactive_Power_Load_of
 write_file='/Users/JH/Documents/GitHub/Forecasting_Time_Varying_Reactive_Power_Load_of_Power_Systems/data/elm_iteration_result_p.csv';
 
 NumberofHiddenNeurons=300;
-No_of_Output=48;
+No_of_Output=24;
 ActivationFunction='sig';
 
 RMSE_Training = [];
@@ -13,9 +13,9 @@ MAPE_Testing = [];
 MAE_Training = [];
 MAE_Testing = [];
 
-for x = 1:1000
+for x = 1:1
 x
-[TrainingTime, TestingTime, TrainingAccuracy_RMSE, TestingAccuracy_RMSE, TrainingAccuracy_MAPE, TestingAccuracy_MAPE, TrainingAccuracy_MAE, TestingAccuracy_MAE] = ELM_MultiOutputRegression(train_p, test_p, No_of_Output, NumberofHiddenNeurons, ActivationFunction);
+[TrainingTime, TestingTime, TrainingAccuracy_RMSE, TestingAccuracy_RMSE, TrainingAccuracy_MAPE, TestingAccuracy_MAPE, TrainingAccuracy_MAE, TestingAccuracy_MAE, predict_p] = ELM_MultiOutputRegression(train_p, test_p, No_of_Output, NumberofHiddenNeurons, ActivationFunction);
 TrainingTimeList(x,:) = TrainingTime;
 
 RMSE_Training(x,:) = TrainingAccuracy_RMSE;
@@ -31,4 +31,7 @@ headers = {'RMSE_Train', 'RMSE_Test', 'MAPE_Train', 'MAPE_Test', 'MAE_Train', 'M
 csvwrite_with_headers(write_file,AccList,headers);
 TrainingtTime = mean(TrainingTimeList)
 
-% save('june10','A','B')
+predict_p = predict_p';
+pathname = fileparts('/Users/JH/Documents/GitHub/Forecasting_Time_Varying_Reactive_Power_Load_of_Power_Systems/data/');
+matfile = fullfile(pathname, 'elm_predict_p.mat');
+save(matfile, 'predict_p');
